@@ -8,6 +8,8 @@ class Game(object):
         self.board = [[" ", " ", " "],[" ", " ", " "],[" ", " ", " "]]
         # indicates if the marker to be used by the player and computer
         self.player_first = player_first
+        # if move_count gets to 9 without a winner the game is a draw
+        self.move_count = 0
         # set the marker for the player and computer accordingly
         if self.player_first:
             self.player_marker = "X"
@@ -17,34 +19,28 @@ class Game(object):
             self.comp_marker = "X"
         
     # when invoked AI_move claims the first available space for the computer
-    # returns True to indicate a move was placed succesfully
-    # return False to indicate a move was not placed succesfully	
+    # returns True to indicate game over
+    # return False to indicate continue game	
     def AI_move(self):
         for row in range(len(self.board)): 
             for col in range(len(self.board[row])):
                 if self.board[row][col] == " ":
-                    self.place_move(self.comp_marker, (row, col))
-                    return True
-        return False
+                    return self.place_move(self.comp_marker, (row, col))
+        
 
     # when invoked player_move claims the indicated coordinates for the player
-    # returns True to indicate the move was valid
-    # returns False to indicate the move was invalid
+    # returns True to indicate game over
+    # returns False to indicate continue game
     def player_move(self, coordinates):
-        if self.board[coordinate[0]][coordinates[1]] == " ":
-            return self.place_move(self.placer_marker, coordinates)
-        else:
-            return False
+        if self.board[coordinates[0]][coordinates[1]] == " ":
+            return self.place_move(self.player_marker, coordinates)
 
     # when invoked place_move changes the board to the indicated marker at the indicated coordinates
-    # return True to indicate the move was sucessfully placed
-    # return False to indicate the move was not placed
+    # return True to indicate game over
+    # return False to indicate continue game
     def place_move(self, marker, coordinates):
         self.board[coordinates[0]][coordinates[1]] = marker
-        if self.board[coordinates[0][coordinates[1] == marker:
-            return True
-        else:
-            return False
+        return self.check_board(coordinates)
 
     # when invoked print_board prints the information stored in board as a formated tic tac toe board
     def print_board(self):
@@ -63,20 +59,143 @@ class Game(object):
             count += 1
 
     # when invoked check_board checks the board to see if there is a winner or stalemate
+    # checks possible states based on the most recent move
     # if there is a winner an appropriate message is printed
     # return True if there is a winner or stalemate
     # return False if there is not a winner
-    def check_board(self):
-        for line in self.board:
-            for pos in range(len(line)):
+    def check_board(self, coordinates):
+        # increment the move count
+        self.move_count += 1
+        # flag to indicate win condition
+        win_flag = 0
+        # check the row of the most recent move
+        prev_pos = self.board[coordinates[0]][0]
+        for i in range(len(self.board[coordinates[0]])-1):
+            curr_pos = self.board[coordinates[0]][i+1]
+            if curr_pos != prev_pos:
+                win_flag = 0    
+                break
+            else:
+                win_flag = 1
+                prev_pos = curr_pos
+        # check to see if the entire row matched
+        if win_flag:
+            # there was a winner
+            self.print_winner(curr_pos)
+            return True
+
+        # the row did not have a winner check the column   
+        prev_pos = self.board[0][coordinates[1]]
+        for i in range(len(self.board[coordinates[1]])-1):
+            curr_pos = self.board[i+1][coordinates[1]]
+            if curr_pos != prev_pos:
+                win_flag = 0
+                break
+            else:
+                win_flag = 1
+                prev_pos = curr_pos
+        # check to seee if the entire column matched
+        if win_flag:
+            # there was a winner
+            self.print_winner(curr_pos)
+            return True
+        # the column did not have a winner check to see if the coordinates match a diagonal
+        if coordinates == (0,0) or coordinates == (1,1) or coordinates == (2,2):
+            prev_pos = self.board[0][0]
+            for i in range(len(self.board[0])-1):
+                curr_pos = self.board[i+1][i+1]
+                if curr_pos != prev_pos:
+                    win_flag = 0
+                    break
+                else:
+                    win_flag = 1
+                    prev_pos = curr_pos
+            # check to see if the entire diagonal matched
+            if win_flag:
+                # there was a winner
+                self.print_winner(curr_pos)
+                return True
+        elif coordinates == (2,0) or coordinates == (1,1) or coordinates == (0,2):
+            prev_pos = self.board[0][2]
+            curr_pos = self.board[1][1]
+            if curr_pos == prev_pos:
+                win_flag = 1
+            prev_pos = curr_pos
+            cur_pos = self.board[2][0]
+            if curr_pos != prev_pos:
+                win_flag = 0
+            # check to seee if the entire diagonal matched
+            if win_flag:
+                # there was a winner
+                self.print_winner(curr_pos)
+                return True
+ 
+        # there was not a winner check for a draw
+        for row in self.board:
+            for col in row:
+                if col == " ":
+                    # there is still a blank space 
+                    return False
+        # a blank space was not found there was a draw
+        print("Stalemate! It could have been worse!")
+        return True
+            
+    
+    def print_winner(self, marker):
+        # check to see if the winning marker belongs to the computer or player
+        if self.player_marker == marker:
+            # the player won
+            print("Congrats! You won!")
+        else:
+            # the computer won
+            print("You lost! Better luck next time!")
 
 # main to test the class
 def main():
-    print("In main")
-    game = Game()
+    print("Lets play Tic Tac Toe!")
+    input_flag = 1
+    while (input_flag):
+        player_first = input("Would you like to go first? Y/n: ")
+        if isinstance(player_first, str):
+            player_first.upper()
+            if player_first == "Y" or player_first == "N":
+                input_flag = 0
+            else:
+                print("Please make a valid selection!")
+        else:
+            print("Please make a valid selection!")
+    if player_first == "Y":
+        game = Game(1)
+        moves = 0
+    else:
+        game = Game()
+        game.AI_move()
+        moves = 1
+    game_flag = 1
+    while(game_flag):
+        game.print_board()
+        input_flag = 1
+        while (input_flag):
+            coor_raw = input("Enter the coordinates for your move seperated by a space (e.g. \"0 2\"): ")
+            try:
+                coordinates_raw = coor_raw.split()
+                coordinates = (int(coordinates_raw[0]), int(coordinates_raw[1]))
+                if coordinates[0] >= 0 and coordinates[0] <= 2 and coordinates[1] >= 0 and coordinates[1] <= 2:
+                    input_flag = 0
+                else:
+                    # invalid input
+                    print("Please enter valid coordinates between 0 and 2!")
+            except TypeError: 
+                print("TypeError: Please enter valid coordinates between 0 and 2!")
+        if game.player_move(coordinates):
+            game_flag = 0
+        moves += 1
+        if moves == 9:
+            break
+        if game.AI_move():
+            game_flag = 0
+        moves += 1
+        if moves == 9:
+            game_flag = 0
     game.print_board()
-    game.place_move("O", (0,0))
-    game.print_board()
-    game.AI_move()
-    game.print_board()
-main()
+main() 
