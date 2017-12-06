@@ -44,6 +44,7 @@ class Game(object):
 
     # when invoked print_board prints the information stored in board as a formated tic tac toe board
     def print_board(self):
+        '''
         count = 0;
         for line in self.board:
             for pos in range(len(line)):
@@ -57,6 +58,32 @@ class Game(object):
             else:
                 print(" | |")
             count += 1
+        '''
+        print(self.board_to_str(), end='')
+
+    # when invoked board_to_str converts the board into a string and returns the string object
+    def board_to_str(self):
+        ret_str = ""
+        count = 0;
+        for line in self.board:
+            for pos in range(len(line)):
+                ret_str += line[pos]
+                if pos == 2:
+                    ret_str += "\n"
+                else:
+                    ret_str += "|"
+            if count < 2:
+                ret_str += "_|_|_\n"
+            else:
+                ret_str += " | | \n"
+            count += 1
+        return ret_str
+
+    # when invoked check_coords checks to see if the coordinates are valid for the board
+    # returns True if the coordinates are valid
+    # returns False if the coordinates are not valid
+    def check_coords(self, coordinates):
+        return self.board[coordinates[0]][coordinates[1]] == " "
 
     # when invoked check_board checks the board to see if there is a winner or stalemate
     # checks possible states based on the most recent move
