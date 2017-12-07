@@ -27,14 +27,6 @@ class Game(object):
                 if self.board[row][col] == " ":
                     return self.place_move(self.comp_marker, (row, col))
         
-
-    # when invoked player_move claims the indicated coordinates for the player
-    # returns True to indicate game over
-    # returns False to indicate continue game
-    def player_move(self, coordinates):
-        if self.board[coordinates[0]][coordinates[1]] == " ":
-            return self.place_move(self.player_marker, coordinates)
-
     # when invoked place_move changes the board to the indicated marker at the indicated coordinates
     # return True to indicate game over
     # return False to indicate continue game
@@ -88,8 +80,9 @@ class Game(object):
     # when invoked check_board checks the board to see if there is a winner or stalemate
     # checks possible states based on the most recent move
     # if there is a winner an appropriate message is printed
-    # return True if there is a winner or stalemate
-    # return False if there is not a winner
+    # return 1 if there is a winner 
+    # return -1 if there is a stalemate
+    # return 0 if there is not a winner
     def check_board(self, coordinates):
         # increment the move count
         self.move_count += 1
@@ -109,7 +102,7 @@ class Game(object):
         if win_flag:
             # there was a winner
             self.print_winner(curr_pos)
-            return True
+            return 1
 
         # the row did not have a winner check the column   
         prev_pos = self.board[0][coordinates[1]]
@@ -125,7 +118,7 @@ class Game(object):
         if win_flag:
             # there was a winner
             self.print_winner(curr_pos)
-            return True
+            return 1
         # the column did not have a winner check to see if the coordinates match a diagonal
         if coordinates == (0,0) or coordinates == (1,1) or coordinates == (2,2):
             prev_pos = self.board[0][0]
@@ -141,7 +134,7 @@ class Game(object):
             if win_flag:
                 # there was a winner
                 self.print_winner(curr_pos)
-                return True
+                return 1
         elif coordinates == (2,0) or coordinates == (1,1) or coordinates == (0,2):
             prev_pos = self.board[0][2]
             curr_pos = self.board[1][1]
@@ -155,17 +148,16 @@ class Game(object):
             if win_flag:
                 # there was a winner
                 self.print_winner(curr_pos)
-                return True
- 
+                return 1 
         # there was not a winner check for a draw
         for row in self.board:
             for col in row:
                 if col == " ":
                     # there is still a blank space 
-                    return False
+                    return 0
         # a blank space was not found there was a draw
         print("Stalemate! It could have been worse!")
-        return True
+        return -1
             
     
     def print_winner(self, marker):

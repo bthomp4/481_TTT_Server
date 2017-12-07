@@ -21,6 +21,12 @@ server_socket.bind((''.server_port))
 client_dict = dict()
 get_coor_str = "CRDR,Here is the current board:\n" + client_dict[current_address].board_to_str() + "\nPlease enter the coordinates for your move sperated by a space (e.g. \"0 2\"): "
 print("The server is ready to recieve")
+invalid_coor_str = "INVC,Those coordinates are invalid!\nPlease enter valid coordinates: "
+discnt_client_str = "DCNT,See you again soon!"
+discnt_server_str ="DCNT,Server Disconnected!"
+win_str = "EOG,Congrats! You won!"
+loss_str = "EOG,Sorry you lost! Better luck next time!"
+stale_str = "EOG,Stalemate! Try harder next time!"
 while True:
     message, current_address = server_socket.recvfrom(2048)
     # decode the message
@@ -39,7 +45,7 @@ while True:
                 # the computer starts
                 game = Game()
                 # have the computer make the first move
-                game_over = game.AI_move()
+                game.AI_move()
             client_dict[current_address] = game
             response = get_coor_str
     elif dec_msg[0] == "MOVE":
@@ -49,8 +55,20 @@ while True:
         coordinates = (int(coor_raw[0]), int(coor_raw[1]))
         if check_coords(coordinates):
             # the coordinates are valid place the move on the board
-            game_over = 
-        else:
+            game_over = client_dict[current_address].place_move(coordinates)
+            # check to see if the game is over
+            if game_over:
+                # the game is over check to see if win or stalemate
+                if game_over > 0:
+                    # the client won
 
+                
+                 
+        else:
+            # the coordinates are not valid 
+            response = invalid_coor_str
     elif dec_msg[0] == "DCNT":
-   
+        # The client is discontinuing the game
+        # remove the client from the client_dict
+        client_dict.pop(current_Address)
+        response = discnt_str
