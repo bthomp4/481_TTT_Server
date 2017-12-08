@@ -20,17 +20,12 @@ import sys
 server_port = 12000
 client_socket = socket(AF_INET, SOCK_DGRAM)
 
-def signal_handler(signal, frame):
-    print('You pressed Ctrl+C')
-    client_socket.close()
-    sys.exit(0)
 
 parser = argparse.ArgumentParser(description='Play Tic Tac Toe with a remote server!')
 parser.add_argument('-c', help='indicates the client will go first', action='store_true')
 parser.add_argument('-s', dest='server_name', help='specifies the IP of the server, this is required', required=True)
 args = parser.parse_args()
 
-signal.signal(signal.SIGINT, signal_handler)
 
 game_flag = 1
 
@@ -45,6 +40,15 @@ if args.c:
 else:
     # the server will go first
     message = init_server_str
+
+def signal_handler(signal, frame):
+    print('You pressed Ctrl+C')
+    message = disconnect_str
+    client_socket.sendto(message.encode(), (args.server_name, server_port)) 
+    client_socket.close()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 # send the message to initilize the game
 client_socket.sendto(message.encode(), (args.server_name, server_port))
@@ -93,7 +97,7 @@ while game_flag:
         print(dec_rsp[1])
         game_flag = 0
         ''' debug print '''
-        print('disconnect')
+        # print('disconnect')
     
     elif dec_rsp[0] == 'ERR':
         # the server did not recieve the message correctly 

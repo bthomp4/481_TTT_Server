@@ -95,10 +95,8 @@ class Game(object):
         win_flag = 0
         # check the row of the most recent move
         prev_pos = self.board[coordinates[0]][0]
-        print('test!')
         for i in range(len(self.board[coordinates[0]])-1):
             curr_pos = self.board[coordinates[0]][i+1]
-            print(prev_pos, curr_pos)
             if curr_pos != prev_pos:
                 win_flag = 0    
                 break
@@ -115,7 +113,6 @@ class Game(object):
         prev_pos = self.board[0][coordinates[1]]
         for i in range(len(self.board[coordinates[1]])-1):
             curr_pos = self.board[i+1][coordinates[1]]
-            print(prev_pos, curr_pos)
             if curr_pos != prev_pos:
                 win_flag = 0
                 break
@@ -129,31 +126,14 @@ class Game(object):
             return 1
         # the column did not have a winner check to see if the coordinates match a diagonal
         if coordinates == (0,0) or coordinates == (1,1) or coordinates == (2,2):
-            prev_pos = self.board[0][0]
-            for i in range(len(self.board[0])-1):
-                curr_pos = self.board[i+1][i+1]
-                if curr_pos != prev_pos:
-                    win_flag = 0
-                    break
-                else:
-                    win_flag = 1
-                    prev_pos = curr_pos
-            # check to see if the entire diagonal matched
-            if win_flag:
+            # check to seee if the entire diagonal matched
+            if self.board[0][0] == self.board[1][1] and self.board[1][1] == self.board[2][2]:
                 # there was a winner
                 self.print_winner(curr_pos)
                 return 1
         elif coordinates == (2,0) or coordinates == (1,1) or coordinates == (0,2):
-            prev_pos = self.board[0][2]
-            curr_pos = self.board[1][1]
-            if curr_pos == prev_pos:
-                win_flag = 1
-            prev_pos = curr_pos
-            cur_pos = self.board[2][0]
-            if curr_pos != prev_pos:
-                win_flag = 0
             # check to seee if the entire diagonal matched
-            if win_flag:
+            if self.board[2][0] == self.board[1][1] and self.board[1][1] == self.board[0][2]:
                 # there was a winner
                 self.print_winner(curr_pos)
                 return 1 

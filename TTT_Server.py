@@ -16,9 +16,14 @@ while True:
 from socket import *
 from TTT_Game import Game
 
+import signal
+import sys
+
 server_port = 12000
 server_socket = socket(AF_INET, SOCK_DGRAM)
 server_socket.bind(('', server_port))
+
+
 client_dict = dict()
 get_coor_str = 'CRDR,Please enter the coordinates for your move sperated by a space (e.g. \"0 2\"): '
 print('The server is ready to recieve')
@@ -29,6 +34,18 @@ win_str = 'EOG,Congrats! You won!'
 loss_str = 'EOG,Sorry you lost! Better luck next time!'
 stale_str = 'EOG,Stalemate! Try harder next time!'
 err_str = 'ERR,Error message not recieved correctly!'
+
+def signal_handler(signal, frame):
+    print('You pressed Ctrl+C')
+    # send a disconnect message to all clients
+    for key in client_dict: 
+        response = discnt_server_str
+        server_socket.sendto(response.encode(), key)
+    server_socket.close()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
 while True:
     message, current_address = server_socket.recvfrom(2048)
     # decode the message
