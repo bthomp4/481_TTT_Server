@@ -26,7 +26,12 @@ class Game(object):
             for col in range(len(self.board[row])):
                 if self.board[row][col] == " ":
                     return self.place_move(self.comp_marker, (row, col))
-        
+    # when invoked player_move claims the space indicated by coordinates
+    # returns True to indicate game over
+    # returns False to indicate continue game
+    def player_move(self, coordinates):
+        return self.place_move(self.player_marker, coordinates)
+            
     # when invoked place_move changes the board to the indicated marker at the indicated coordinates
     # return True to indicate game over
     # return False to indicate continue game
@@ -90,8 +95,10 @@ class Game(object):
         win_flag = 0
         # check the row of the most recent move
         prev_pos = self.board[coordinates[0]][0]
+        print('test!')
         for i in range(len(self.board[coordinates[0]])-1):
             curr_pos = self.board[coordinates[0]][i+1]
+            print(prev_pos, curr_pos)
             if curr_pos != prev_pos:
                 win_flag = 0    
                 break
@@ -108,6 +115,7 @@ class Game(object):
         prev_pos = self.board[0][coordinates[1]]
         for i in range(len(self.board[coordinates[1]])-1):
             curr_pos = self.board[i+1][coordinates[1]]
+            print(prev_pos, curr_pos)
             if curr_pos != prev_pos:
                 win_flag = 0
                 break
@@ -168,7 +176,7 @@ class Game(object):
         else:
             # the computer won
             print("You lost! Better luck next time!")
-
+'''
 # main to test the class
 def main():
     print("Lets play Tic Tac Toe!")
@@ -218,3 +226,4 @@ def main():
             game_flag = 0
     game.print_board()
 main() 
+'''
