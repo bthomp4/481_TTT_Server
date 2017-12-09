@@ -34,7 +34,7 @@ win_str = 'EOG,Congrats! You won!'
 loss_str = 'EOG,Sorry you lost! Better luck next time!'
 stale_str = 'EOG,Stalemate! Try harder next time!'
 err_str = 'ERR,Error message not recieved correctly!'
-
+bad_connect_str = 'BCNT,You are an unregistered client!'
 def signal_handler(signal, frame):
     print('You pressed Ctrl+C')
     # send a disconnect message to all clients
@@ -52,14 +52,9 @@ while True:
     dec_msg = message.decode().split(',')
     ''' debug print message id'''
     print(dec_msg[0])
-   
-    # check the message type
-    if dec_msg[0] == 'INIT':
-        # the message corresponds to a new connect
-        # check to see if the current address corresponds to an entry in the client_dict
-        if current_address not in client_dict:
-            # the current address does not currently correspond to an active board
-            # check to see if the player wants to start
+    if current_address not in client_dict:
+        if dec_msg[0] == 'INIT':
+            # the message corresponds to a new connect
             if dec_msg[1] == '1':
                 # the player wants to start
                 game = Game(1)
@@ -70,55 +65,61 @@ while True:
                 game.AI_move()
             client_dict[current_address] = game
             response = get_coor_str
+            board_flag = 1    
         else:
-            print('client already exits')
-        print(client_dict.items())
-    elif dec_msg[0] == 'MOVE':
-        # the message corresponds to a player move
-        # check to see if the move is valid
-        coor_raw = dec_msg[1].split()
-        coordinates = (int(coor_raw[0]), int(coor_raw[1]))
-        if client_dict[current_address].check_coords(coordinates):
-            # the coordinates are valid place the move on the board
-            game_over = client_dict[current_address].player_move(coordinates)
-            # check to see if the game is over
-            if game_over:
-                # the game is over check to see if win or stalemate
-                if game_over > 0:
-                    # the client won
-                    response = win_str
-                else:
-                    # there was a stalemate
-                    response = stale_str
-            else:
-                # the game is not over yet have the AI make a move
-                game_over = client_dict[current_address].AI_move()
+             # the message came from an un-registered client and it was not a new connect message
+             response = bad_connect_str
+             board_flag = 0   
+    else:
+        board_flag = 1
+        # check the message type
+        if dec_msg[0] == 'MOVE':
+            # the message corresponds to a player move
+            # check to see if the move is valid
+            coor_raw = dec_msg[1].split()
+            coordinates = (int(coor_raw[0]), int(coor_raw[1]))
+            if client_dict[current_address].check_coords(coordinates):
+                # the coordinates are valid place the move on the board
+                game_over = client_dict[current_address].player_move(coordinates)
+                # check to see if the game is over
                 if game_over:
                     # the game is over check to see if win or stalemate
                     if game_over > 0:
-                        # the server won
-                        response = loss_str
+                        # the client won
+                        response = win_str
                     else:
                         # there was a stalemate
                         response = stale_str
                 else:
-                    # the game is not over prompt for a new coordinate
-                    response = get_coor_str
+                    # the game is not over yet have the AI make a move
+                    game_over = client_dict[current_address].AI_move()
+                    if game_over:
+                        # the game is over check to see if win or stalemate
+                        if game_over > 0:
+                            # the server won
+                            response = loss_str
+                        else:
+                            # there was a stalemate
+                            response = stale_str
+                    else:
+                        # the game is not over prompt for a new coordinate
+                        response = get_coor_str
+            else:
+                # the coordinates are not valid 
+                response = invalid_coor_str
+        elif dec_msg[0] == 'DCNT':
+            # The client is discontinuing the game
+            # remove the client from the client_dict
+            client_dict.pop(current_address)
+            response = discnt_client_str
+            board_flag = 0
         else:
-            # the coordinates are not valid 
-            response = invalid_coor_str
-    elif dec_msg[0] == 'DCNT':
-        # The client is discontinuing the game
-        # remove the client from the client_dict
-        client_dict.pop(current_address)
-        response = discnt_client_str
-    else:
-        # the message does not take the correct form
-        response = err_str
+            # the message does not take the correct form
+            response = err_str
     
     # the response has been calculated 
     # check to see if the client is still connected
-    if not dec_msg[0] == 'DCNT':
+    if board_flag:
         # append the game board to the message
         response = response + ',' + client_dict[current_address].board_to_str()
     # send the response back to the client
